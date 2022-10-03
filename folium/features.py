@@ -1144,6 +1144,9 @@ class Choropleth(FeatureGroup):
         Whether the Layer will be included in LayerControls.
     show: bool, default True
         Whether the layer will be shown on opening (only for overlays).
+    **kwargs: Assorted.
+        These values will be provided directly to the GeoJSON or TopoJSON object as parameters during the
+        initialization.
 
     Returns
     -------
@@ -1166,6 +1169,13 @@ class Choropleth(FeatureGroup):
     ...            fill_color='PuBu',
     ...            bins=[0, 20, 30, 40, 50, 60],
     ...            highlight=True)
+    >>> Choropleth(geo_data='geo.json', data=df,
+    ...            columns=['Data 1', 'Data 2'],
+    ...            key_on='feature.properties.myvalue',
+    ...            fill_color='PuBu',
+    ...            bins=[0, 20, 30, 40, 50, 60],
+    ...            highlight=True,
+    ...            tooltip=GeoJsonTooltip(fields=('CNTY_NM',), labels=False, sticky=False))
     """
 
     def __init__(self, geo_data, data=None, columns=None, key_on=None,  # noqa
@@ -1191,6 +1201,7 @@ class Choropleth(FeatureGroup):
         if 'threshold_scale' in kwargs:
             if kwargs['threshold_scale'] is not None:
                 bins = kwargs['threshold_scale']
+                del kwargs['threshold_scale']
             warnings.warn(
                 'choropleth `threshold_scale` parameter is now depreciated '
                 'in favor of the `bins` parameter.', DeprecationWarning)
@@ -1285,13 +1296,15 @@ class Choropleth(FeatureGroup):
                 geo_data,
                 topojson,
                 style_function=style_function,
-                smooth_factor=smooth_factor)
+                smooth_factor=smooth_factor,
+                **kwargs)
         else:
             self.geojson = GeoJson(
                 geo_data,
                 style_function=style_function,
                 smooth_factor=smooth_factor,
-                highlight_function=highlight_function if highlight else None)
+                highlight_function=highlight_function if highlight else None,
+                **kwargs)
 
         self.add_child(self.geojson)
         if self.color_scale:
